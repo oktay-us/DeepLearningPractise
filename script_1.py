@@ -1,14 +1,26 @@
-import argparse
-parser = argparse.ArgumentParser(description='number_from_user')
-parser.add_argument('inp', type=float)
-args=parser.parse_args()
-print(args.inp*10+8)
+'''
+Module to do x * 10 + 8 with Theano
+'''
 
+import argparse
+import theano
 import theano.tensor as T
-from theano import function
-x=T.dscalar('x')
-y=T.dscalar('y')
-# Type is not matching, namaspace type to theano tensorType
-x=args.inp
-y=10*x+8
-f=function([],y)
+
+
+def main(x):
+    X = T.dscalar('X')
+    Y = 10 * X + 8
+    f = theano.function([X], Y)
+
+    print f(x)
+
+def get_parser():
+    parser = argparse.ArgumentParser(description='number_from_user')
+    parser.add_argument('x', type=float)
+    return parser
+
+if __name__ == '__main__':
+    parser = get_parser()
+    args = parser.parse_args()
+    x = args.x
+    main(x)
