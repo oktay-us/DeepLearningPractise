@@ -1,26 +1,31 @@
 import argparse
-import numpy
+import numpy as np
+import random
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
-def main(n,m,l,d):
-    srng = RandomStreams(seed=234)
-    #what does seed number mean?
-    rv_a = srng.normal((n,m), avg = 0, std = 1)
-    rv_b = srng.normal((n,l), avg = 0, std = 1)
-    rv_x = theano.shared(numpy.random.uniform( size=(m, l), low=d, high=d)) 
-    f_a = theano.function([], rv_a, no_default_updates=False)
-    #unless seed number changed, it always give the same output, no randomness?
-    f_b = theano.function([], rv_b)
-    f_x = theano.function([], rv_x)
 
-    A = T.dmatrix('A')
-    B = T.dmatrix('B')
-    X = T.dmatrix('X')
-    Y = T.dot(A, X) + B
-    f = theano.function([A, B, X], Y)
-    print f(f_a(), f_b(), f_x())
+floatX = 'float32'
+
+def main(n, m, l, d):
+    srng = RandomStreams(seed=random.randint(0, 1000))
+    #what does seed number mean?
+
+    X = T.matrix('X', dtype=floatX)
+    M = T.scalar('M', dtype='int64')
+    N = T.scalar('N', dtype='int64')
+    L = T.scalar('L', dtype='int64')
+
+    rv_a = srng.normal((N, M), avg=0, std=1).astype(floatX)
+    rv_b = srng.normal((N, L), avg=0, std=1).astype(floatX)
+
+    Y = T.dot(rv_a, X) + rv_b
+    f = theano.function([X, M, N, L], Y)
+
+    x = np.zeros((m, l)).astype(floatX) + d
+
+    print f(x, m, n, l)
 
 def get_parser():
     parser = argparse.ArgumentParser(description='number_from_user')
@@ -36,5 +41,5 @@ if __name__ == '__main__':
     n = args.N
     m = args.M
     l = args.L
-    d = args.D  
-    main(n,m,l,d)
+    d = args.D
+    main(n, m, l, d)
