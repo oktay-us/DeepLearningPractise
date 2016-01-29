@@ -8,30 +8,33 @@ from theano.tensor.shared_randomstreams import RandomStreams
 
 floatX = 'float32'
 
-def main(n, m, l, d):
+def main(n, l, n_it, d):
     srng = RandomStreams(seed=random.randint(0, 1000))
-    #what does seed number mean?
 
     X = T.matrix('X', dtype=floatX)
-    M = T.scalar('M', dtype='int64')
+    N_IT = T.scalar('N_IT', dtype='int64')
     N = T.scalar('N', dtype='int64')
     L = T.scalar('L', dtype='int64')
 
-    rv_a = srng.normal((N, M), avg=0, std=1).astype(floatX)
+    rv_a = srng.normal((N, N), avg=0, std=1).astype(floatX)
     rv_b = srng.normal((N, L), avg=0, std=1).astype(floatX)
 
     Y = T.dot(rv_a, X) + rv_b
-    f = theano.function([X, M, N, L], Y)
 
-    x = np.zeros((m, l)).astype(floatX) + d
+    f = theano.function([X, N, L], Y)
 
-    print f(x, m, n, l)
+    x = np.zeros((n, l)).astype(floatX) + d
+    y = x
+    for i in range(n_it):
+        y = f(y, n, l)
+    print y
+
 
 def get_parser():
     parser = argparse.ArgumentParser(description='number_from_user')
     parser.add_argument('N', type=int)
-    parser.add_argument('M', type=int)
     parser.add_argument('L', type=int)
+    parser.add_argument('N_IT', type=int)
     parser.add_argument('D', type=float)
     return parser
 
@@ -39,7 +42,7 @@ if __name__ == '__main__':
     parser = get_parser()
     args = parser.parse_args()
     n = args.N
-    m = args.M
     l = args.L
+    n_it = args.N_IT
     d = args.D
-    main(n, m, l, d)
+    main(n, l, n_it, d)
